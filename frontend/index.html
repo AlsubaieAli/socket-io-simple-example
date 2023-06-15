@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket IO</title>
+  </head>
+  <body>
+    <main>
+      <h1>Testing SocketIO</h1>
+      <div id="container">
+        <h3>Request is sent to Backend</h3>
+        <div id="normal-response-div">Loading...</div>
+
+        <div>
+          <h3 id="lazy-title">Lazy loaded stuff:</h3>
+        </div>
+        <ul id="lazy-stuff"></ul>
+      </div>
+    </main>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://127.0.0.1:3000");
+
+      const normalResponseDiv = document.querySelector("#normal-response-div");
+      const lazyElement = document.querySelector("#lazy-stuff");
+
+      const fetchFromBackend = async () => {
+        const response = await fetch("http://127.0.0.1:3000", {
+          mode: "cors", // no-cors, *cors, same-origin
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        console.log(data);
+        normalResponseDiv.textContent = data.message;
+      };
+
+      // Event name is 'new-connection'
+      socket.on("new-connection", (message) => {
+        console.log("connected to backend successfully");
+        console.log({ message });
+        document.querySelector("#lazy-title").textContent =
+          "Lazy loaded stuff (connected):";
+      });
+
+      // Event name is 'new-message'
+      socket.on("new-message", (message) => {
+        var item = document.createElement("li");
+        item.textContent = message;
+        lazyElement.appendChild(item);
+      });
+
+      fetchFromBackend();
+    </script>
+  </body>
+</html>
